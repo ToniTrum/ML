@@ -33,14 +33,17 @@ class NesterovAG:
         Returns:
             A point at which the optimization stopped
         '''
-        delta_w = np.random.randint(-10, 10, x0.shape[0])
-        w = x0.copy()
+        w = x0.astype(float, copy=True)
+        delta_w = np.zeros_like(w)
 
         for _ in range(max_iter):
-            if np.linalg.norm(oracle.gradient(w)) <= eps:
+            w_lookahead = w + self.alpha * delta_w
+            grad = oracle.gradient(w_lookahead)
+
+            if np.linalg.norm(grad) < eps:
                 break
             
-            delta_w = self.alpha * delta_w + self.eta * oracle.gradient(w - self.alpha * delta_w)
-            w = w - delta_w
+            delta_w = self.alpha * delta_w - self.eta * grad
+            w += delta_w
 
         return w
