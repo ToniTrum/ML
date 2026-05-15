@@ -33,20 +33,16 @@ class AdaGrad:
         Returns:
             A point at which the optimization stopped
         '''
-        w = x0.copy()
-        nabla_L_p = np.ndarray()
-        eta_p = np.ndarray(shape=x0.shape[0])
-        eta_p.fill(self.eta)
+        w = x0.astype(float, copy=True)
+        G = np.zeros_like(w)
 
         for _ in range(max_iter):
-            grad_p = oracle.gradient(w)
+            grad = oracle.gradient(w)
 
-            if np.linalg.norm(grad_p) <= eps:
+            if np.linalg.norm(grad) <= eps:
                 break
 
-            nabla_L_p = np.vstack(nabla_L_p, grad_p)
-            G = np.sum(np.multiply(nabla_L_p, nabla_L_p), axis=0)
-            eta_p = self.eta / np.sqrt(G + self.epsilon)
-            w = w - np.multiply(eta_p, grad_p)
+            G += grad ** 2
+            w -= (self.eta / np.sqrt(G + self.epsilon)) * grad
 
         return w
